@@ -1,8 +1,0 @@
-services:
-  - type: web
-    name: hand-cricket-arena
-    runtime: node
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /health
-    autoDeploy: true
