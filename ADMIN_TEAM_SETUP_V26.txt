@@ -1,4 +1,0 @@
-V26 ADMIN SETUP
-Owner Game ID: SHIVAM123
-The owner signs into the normal game account first, then opens /admin and sets the Admin password on first setup.
-Approved Admin Game IDs are managed by the owner.
