@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: hand-cricket-arena
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hand-cricket-arena-db
+          property: connectionString
+      - key: OWNER_GAME_ID
+        sync: false
+      - key: OWNER_EMAIL
+        sync: false
+      - key: OWNER_RECOVERY_PIN
+        sync: false
+      - key: ADMIN_TEAM_IDS
+        sync: false
+      - key: ADMIN_PIN
+        sync: false
+
+databases:
+  - name: hand-cricket-arena-db
+    databaseName: hand_cricket_arena
+    plan: free
