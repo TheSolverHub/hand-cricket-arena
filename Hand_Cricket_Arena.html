@@ -351,6 +351,7 @@ body{background:var(--bg-gradient)} .game-container{border-color:rgba(216,180,25
 <style>
 .mp-lobby-top{display:flex;align-items:center;justify-content:space-between;text-align:left;padding:8px 2px}.mp-plus{width:48px!important;height:48px!important;min-height:48px!important;border-radius:50%!important;font-size:27px!important;padding:0!important}.hca-panel{border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.035);border-radius:14px;padding:12px}.hca-tabs{display:flex;gap:7px}.hca-tabs>*{flex:1}.mp-room-card{border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px;margin:7px 0;text-align:left;background:rgba(255,255,255,.03)}
 </style>
+<script>window.API_BASE = 'https://hand-cricket-arena.shivam-hca.workers.dev'; const API_BASE = window.API_BASE;</script>
 <script>async function hcaLoadServerAnnouncement(){try{const r=await fetch(API_BASE + '/api/announcement',{cache:'no-store'});if(!r.ok)return;const d=await r.json(),b=document.getElementById('hcaServerAnnouncement'),t=document.getElementById('hcaServerAnnouncementText');if(!b||!t)return;if(d.enabled&&d.text){t.textContent=d.text;b.style.display='block'}else{t.textContent='';b.style.display='none'}}catch(e){}}window.addEventListener('load',hcaLoadServerAnnouncement);</script><style>/* V20: local 0-6 single row */
 #buttonGrid.buttons-grid{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:4px!important;}
 #buttonGrid .choice-btn{min-width:0!important;padding:9px 0!important;}
