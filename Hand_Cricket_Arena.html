@@ -654,7 +654,7 @@ body{background:var(--bg-gradient)} .game-container{border-color:rgba(216,180,25
         <label>Room Type</label><select id="mpAccessSelect"><option value="free">Free</option><option value="premium">Premium</option></select>
         <label>Match Format</label><div class="mp-format-grid" id="mpFormatGrid"><div class="mp-format-card selected" data-format="limited" onclick="mpChooseFormat('limited')"><b>🏏 Limited Overs</b><span>Fast match</span></div><div class="mp-format-card" data-format="test" onclick="mpChooseFormat('test')"><b>📜 Test Match</b><span>4 innings</span></div></div>
         <div id="mpLimitedOptions"><label>Overs per innings</label><input id="mpOversInput" type="number" min="1" max="50" value="5"></div>
-        <label>Server</label><input id="mpServer" value="" placeholder="Auto-detect">
+        <label>Server</label><input id="mpServer" value="wss://hand-cricket-arena.shivam-hca.workers.dev" placeholder="Cloudflare WebSocket Server">
         <div class="mp-row" style="margin-top:6px"><button class="action-btn" onclick="mpCreateRoom()">Create Room</button><button class="action-btn danger-btn" onclick="hcaToggleCreateRoom(false)">Cancel</button></div>
       </div>
       <div class="mp-status" id="mpLobbyStatus">Ready.</div>
@@ -1899,7 +1899,7 @@ function mpStartRoom(){if(!mpRoomCode)return;mpSend({type:'start',room:mpRoomCod
 
 let mpMatchType='limited';
 function mpChooseFormat(type){mpMatchType=type==='test'?'test':'limited';document.querySelectorAll('.mp-format-card').forEach(x=>x.classList.toggle('selected',x.dataset.format===mpMatchType));const o=mpEl('mpLimitedOptions');if(o)o.style.display=mpMatchType==='test'?'none':'block'}
-function mpServerUrl(){let u=(mpEl('mpServer').value||'').trim();if(!u){if(location.protocol==='https:')u='wss://'+location.host;else if(location.protocol==='http:')u='ws://'+location.host;else u='ws://localhost:3000'}if(/^https?:\/\//i.test(u))u=u.replace(/^http/i,'ws');if(!/^wss?:\/\//i.test(u))u='ws://'+u;return u.replace(/\/$/,'')}
+function mpServerUrl(){let u=(mpEl('mpServer').value||'').trim()||'wss://hand-cricket-arena.shivam-hca.workers.dev';if(/^https?:\/\//i.test(u))u=u.replace(/^http/i,'ws');if(!/^wss?:\/\//i.test(u))u='wss://'+u;return u.replace(/\/$/,'')}
 function mpConnect(cb){
  if(mpSocket&&mpSocket.readyState===WebSocket.OPEN){if(cb)cb();return}
  mpManualLeave=false;
