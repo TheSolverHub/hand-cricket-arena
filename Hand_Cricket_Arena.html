@@ -351,7 +351,7 @@ body{background:var(--bg-gradient)} .game-container{border-color:rgba(216,180,25
 <style>
 .mp-lobby-top{display:flex;align-items:center;justify-content:space-between;text-align:left;padding:8px 2px}.mp-plus{width:48px!important;height:48px!important;min-height:48px!important;border-radius:50%!important;font-size:27px!important;padding:0!important}.hca-panel{border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.035);border-radius:14px;padding:12px}.hca-tabs{display:flex;gap:7px}.hca-tabs>*{flex:1}.mp-room-card{border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px;margin:7px 0;text-align:left;background:rgba(255,255,255,.03)}
 </style>
-<script>async function hcaLoadServerAnnouncement(){try{const r=await fetch('/api/announcement',{cache:'no-store'});if(!r.ok)return;const d=await r.json(),b=document.getElementById('hcaServerAnnouncement'),t=document.getElementById('hcaServerAnnouncementText');if(!b||!t)return;if(d.enabled&&d.text){t.textContent=d.text;b.style.display='block'}else{t.textContent='';b.style.display='none'}}catch(e){}}window.addEventListener('load',hcaLoadServerAnnouncement);</script><style>/* V20: local 0-6 single row */
+<script>async function hcaLoadServerAnnouncement(){try{const r=await fetch(API_BASE + '/api/announcement',{cache:'no-store'});if(!r.ok)return;const d=await r.json(),b=document.getElementById('hcaServerAnnouncement'),t=document.getElementById('hcaServerAnnouncementText');if(!b||!t)return;if(d.enabled&&d.text){t.textContent=d.text;b.style.display='block'}else{t.textContent='';b.style.display='none'}}catch(e){}}window.addEventListener('load',hcaLoadServerAnnouncement);</script><style>/* V20: local 0-6 single row */
 #buttonGrid.buttons-grid{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:4px!important;}
 #buttonGrid .choice-btn{min-width:0!important;padding:9px 0!important;}
 </style>
@@ -362,7 +362,7 @@ body{background:var(--bg-gradient)} .game-container{border-color:rgba(216,180,25
   let readyResolve; window.hcaFirebaseReady=new Promise(r=>readyResolve=r);
   async function initFirebase(){
     if(firebaseAuth)return firebaseAuth;
-    const r=await fetch('/api/firebase-config',{cache:'no-store'});
+    const r=await fetch(API_BASE + '/api/firebase-config',{cache:'no-store'});
     const j=await r.json();
     if(!r.ok)throw new Error(j.error||'Firebase configuration unavailable.');
     firebaseApp=initializeApp(j.config);firebaseAuth=getAuth(firebaseApp);googleProvider=new GoogleAuthProvider();
@@ -386,7 +386,7 @@ body{background:var(--bg-gradient)} .game-container{border-color:rgba(216,180,25
   window.hcaHandleGoogleUser=async function(user){
     try{
       const idToken=await user.getIdToken(true);
-      const r=await fetch('/api/google-session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken})});
+      const r=await fetch(API_BASE + '/api/google-session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken})});
       const j=await r.json();
       if(!r.ok)throw new Error(j.error||'Google authentication failed.');
       if(j.newUser){
@@ -2080,6 +2080,7 @@ function mpPlay(n){if(mpSelected!==null)return;mpSelected=n;mpSend({type:'choice
 <script>
 (function(){
   // ===== GOOGLE-ONLY ACCOUNT / GAME ID =====
+  const API_BASE='https://hand-cricket-arena.shivam-hca.workers.dev';
   const authKey='hcaAuthV2';
   function authData(){try{return JSON.parse(localStorage.getItem(authKey)||'null')}catch{return null}}
   window.setAuth=function(a){localStorage.setItem(authKey,JSON.stringify(a));window.hcaAuth=a};
@@ -2126,7 +2127,7 @@ function mpPlay(n){if(mpSelected!==null)return;mpSelected=n;mpSend({type:'choice
       setStatus('Checking...');
       timer=setTimeout(async()=>{
         try{
-          const r=await fetch('/api/check-game-id?gameId='+encodeURIComponent(v),{cache:'no-store'});
+          const r=await fetch(API_BASE + '/api/check-game-id?gameId='+encodeURIComponent(v),{cache:'no-store'});
           const j=await r.json();
           setStatus(j.available?'✅ Game ID available':'❌ Game ID already taken');
         }catch{setStatus('Server unavailable. Try again.')}
@@ -2139,7 +2140,7 @@ function mpPlay(n){if(mpSelected!==null)return;mpSelected=n;mpSend({type:'choice
       try{
         const idToken=await window.hcaGetGoogleIdToken();
         const pending=window.hcaPendingGoogle||{};
-        const r=await fetch('/api/google-register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken,gameId,name:pending.name||googleUser?.name||'Player',photoURL:pending.photoURL||googleUser?.photoURL||''})});
+        const r=await fetch(API_BASE + '/api/google-register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken,gameId,name:pending.name||googleUser?.name||'Player',photoURL:pending.photoURL||googleUser?.photoURL||''})});
         const j=await r.json();
         if(!r.ok||!j.ok)throw new Error(j.error||'Could not create profile');
         window.hcaPendingGoogle=null;window.setAuth(j);
@@ -2207,7 +2208,7 @@ function mpPlay(n){if(mpSelected!==null)return;mpSelected=n;mpSend({type:'choice
     try{
       const a=JSON.parse(localStorage.getItem('hcaAuthV2')||'null');
       if(!a?.token){c.innerHTML='<p role="alert">Please login first</p>';return;}
-      const r=await fetch('/api/me',{headers:{'X-Session-Token':a.token},cache:'no-store'}),j=await r.json();
+      const r=await fetch(API_BASE + '/api/me',{headers:{'X-Session-Token':a.token},cache:'no-store'}),j=await r.json();
       if(!r.ok)throw Error(j.error||'Failed to load');
       const s=j.stats||{},played=Number(s.matches)||0,wins=Number(s.wins)||0,losses=Number(s.losses??Math.max(0,played-wins)),winRate=played>0?((wins/played)*100).toFixed(1):'0.0';
       c.innerHTML='<table role="table" aria-label="Your complete stats" style="width:100%;font-size:15px;border-collapse:collapse">'+
@@ -2229,7 +2230,7 @@ function mpPlay(n){if(mpSelected!==null)return;mpSelected=n;mpSend({type:'choice
   window.openAccount=async function(){
     switchScreen('accountScreen');const c=document.getElementById('accountContent');
     const a=authData();if(!a){c.innerHTML='<p role="alert">Not logged in</p>';return}
-    try{const r=await fetch('/api/me',{headers:{'X-Session-Token':a.token},cache:'no-store'}),j=await r.json();if(!r.ok)throw Error(j.error||'Could not load account');
+    try{const r=await fetch(API_BASE + '/api/me',{headers:{'X-Session-Token':a.token},cache:'no-store'}),j=await r.json();if(!r.ok)throw Error(j.error||'Could not load account');
       c.innerHTML='<table role="table" style="width:100%;font-size:15px">'+
       '<tr><th style="text-align:left;padding:8px">Name</th><td style="padding:8px">'+esc(j.name||a.name||'Player')+'</td></tr>'+
       '<tr><th style="text-align:left;padding:8px">Game ID</th><td style="padding:8px">'+esc(j.gameId||a.gameId||'—')+'</td></tr>'+
@@ -2266,14 +2267,14 @@ function mpPlay(n){if(mpSelected!==null)return;mpSelected=n;mpSend({type:'choice
     if(!hcaEnsureAuth())return;
     const dash=document.getElementById('hcaDashboard');if(!dash)return;
     const a=authData();
-    try{const r=await fetch('/api/me',{headers:{'X-Session-Token':a.token},cache:'no-store'});const j=await r.json();if(!r.ok)throw new Error(j.error||'Could not load profile.');const st=j.stats||{};const set=(id,v)=>{const x=document.getElementById(id);if(x)x.textContent=v};set('hcaDashName',j.name||a.name||'Player');set('hcaDashId','GAME ID: '+(j.gameId||a.gameId||'—'));set('hcaDashPlan',j.subscription?.premium?'💎 PREMIUM':'FREE');set('hcaDashRuns',st.runs||0);set('hcaDashWickets',st.wickets||0);set('hcaDashMatches',st.matches||0);set('hcaDashWins',st.wins||0);const opening=dash.style.display==='none';dash.style.display=opening?'block':'none';dash.setAttribute('aria-hidden',opening?'false':'true');}catch(e){alert('Profile load failed: '+e.message)}
+    try{const r=await fetch(API_BASE + '/api/me',{headers:{'X-Session-Token':a.token},cache:'no-store'});const j=await r.json();if(!r.ok)throw new Error(j.error||'Could not load profile.');const st=j.stats||{};const set=(id,v)=>{const x=document.getElementById(id);if(x)x.textContent=v};set('hcaDashName',j.name||a.name||'Player');set('hcaDashId','GAME ID: '+(j.gameId||a.gameId||'—'));set('hcaDashPlan',j.subscription?.premium?'💎 PREMIUM':'FREE');set('hcaDashRuns',st.runs||0);set('hcaDashWickets',st.wickets||0);set('hcaDashMatches',st.matches||0);set('hcaDashWins',st.wins||0);const opening=dash.style.display==='none';dash.style.display=opening?'block':'none';dash.setAttribute('aria-hidden',opening?'false':'true');}catch(e){alert('Profile load failed: '+e.message)}
   };
   window.hcaOpenSettings=function(){if(!hcaEnsureAuth())return;const a=authData();alert(`SETTINGS\\n\\nGame ID: ${a.gameId}\\nRole: ${a.role||'USER'}\\nPlan: ${a.subscription?.premium?'PREMIUM':'FREE'}\\n\\nGoogle account is used for sign-in.`)};
   window.hcaOpenRewards=function(){if(!hcaEnsureAuth())return;alert('🎁 Rewards\\n\\nAdmin can grant promotional/testing Premium rewards from the Admin Dashboard.')};
   window.hcaOpenHelp=function(){if(!hcaEnsureAuth())return;const m=document.getElementById('helpModal');if(m)m.style.display='flex';const st=document.getElementById('helpTicketStatus');if(st)st.innerText='Your problem will be sent directly to the Admin dashboard.'};
   window.hcaCloseHelp=function(){const m=document.getElementById('helpModal');if(m)m.style.display='none'};
   window.hcaHelpWhatsApp=function(){window.open('https://wa.me/919354041918?text='+encodeURIComponent('Hand Cricket Arena Help — Game ID: '+(authData()?.gameId||'')+' — I need help.'),'_blank')};
-  window.hcaSendHelpTicket=async function(){const a=authData();if(!a?.token)return makeAuth();const category=document.getElementById('helpCategory')?.value||'General',message=(document.getElementById('helpMessage')?.value||'').trim(),st=document.getElementById('helpTicketStatus');if(!message){if(st)st.innerText='Please describe your problem first.';return}try{const r=await fetch('/api/support/ticket',{method:'POST',headers:{'Content-Type':'application/json','X-Session-Token':a.token},body:JSON.stringify({category,message})}),j=await r.json();if(!r.ok)throw Error(j.error||'Could not send help request.');if(st)st.innerText='✅ Help request sent. Ticket ID: '+j.ticket.id+' — Admin has received it.';document.getElementById('helpMessage').value='';}catch(e){if(st)st.innerText='❌ '+e.message+' You can use WhatsApp Help.'}};
+  window.hcaSendHelpTicket=async function(){const a=authData();if(!a?.token)return makeAuth();const category=document.getElementById('helpCategory')?.value||'General',message=(document.getElementById('helpMessage')?.value||'').trim(),st=document.getElementById('helpTicketStatus');if(!message){if(st)st.innerText='Please describe your problem first.';return}try{const r=await fetch(API_BASE + '/api/support/ticket',{method:'POST',headers:{'Content-Type':'application/json','X-Session-Token':a.token},body:JSON.stringify({category,message})}),j=await r.json();if(!r.ok)throw Error(j.error||'Could not send help request.');if(st)st.innerText='✅ Help request sent. Ticket ID: '+j.ticket.id+' — Admin has received it.';document.getElementById('helpMessage').value='';}catch(e){if(st)st.innerText='❌ '+e.message+' You can use WhatsApp Help.'}};
   window.hcaEnsureAuth=()=>{if(!authData()){makeAuth();return false}window.hcaAuth=authData();return true};
   window.hcaEnsureMultiplayerAuth=()=>{const a=authData();if(!a?.token||!a?.gameId){makeAuth();return false}window.hcaAuth=a;return true};
   window.hcaLogout=async()=>{await window.hcaFirebaseSignOut?.();localStorage.removeItem(authKey);localStorage.removeItem('mpName');location.reload()};
