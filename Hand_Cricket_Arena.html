@@ -380,7 +380,7 @@ body{background:var(--bg-gradient)} .game-container{border-color:rgba(216,180,25
   window.hcaFirebaseGoogleLogin=async function(){
     const auth=await initFirebase();
     if(/Android|iPhone|iPad/i.test(navigator.userAgent)){await signInWithRedirect(auth,googleProvider);return;}
-    const result=await signInWithPopup(auth,googleProvider);
+    const result=await signInWithRedirect(auth,googleProvider);
     return window.hcaHandleGoogleUser(result.user);
   };
   window.hcaFirebaseSignOut=async function(){try{if(firebaseAuth)await signOut(firebaseAuth)}catch(e){console.error(e)}};
