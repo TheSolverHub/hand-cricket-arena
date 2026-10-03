@@ -1,0 +1,9 @@
+{
+  "name":"hand-cricket-cloudflare",
+  "version":"20.0.0",
+  "private":true,
+  "type":"module",
+  "scripts":{"dev":"wrangler dev","deploy":"wrangler deploy","test":"echo \"No tests configured\""},
+  "devDependencies":{"wrangler":"^4.140.0"},
+  "dependencies":{"jose":"^6.2.12"}
+}

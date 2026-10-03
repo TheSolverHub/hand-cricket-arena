@@ -1,0 +1,27 @@
+name = "hand-cricket-arena"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+[durable_objects]
+bindings = [
+  { name = "ROOMS", class_name = "Room" }
+]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hand-cricket-db"
+database_id = "9a21c114-6449-4560-b024-6ce1ecb85cb9"
+
+[vars]
+FIREBASE_PROJECT_ID = "hand-cricket-arena-a040d"
+OWNER_GAME_ID = "SHIVAM123"
+
+[dev]
+ip = "0.0.0.0"
+port = 8787

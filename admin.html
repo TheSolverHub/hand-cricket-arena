@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hand Cricket Arena — Admin Portal</title>
+<style>
+:root{--bg:#0d0915;--card:#171122;--text:#f5f3ff;--muted:#aaa0bd;--accent:#a855f7;--good:#22c55e;--bad:#ef4444;--line:#332542}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0%,#28143d,transparent 35%),radial-gradient(circle at 100% 100%,#102a2a,transparent 35%),var(--bg);color:var(--text);font-family:Arial,sans-serif;min-height:100vh}
+.wrap{width:min(1180px,94%);margin:24px auto}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+.brand{font-weight:900;font-size:24px}
+.muted{color:var(--muted);font-size:13px}
+.card{background:rgba(23,17,34,.96);border:1px solid var(--line);border-radius:16px;padding:18px;margin:12px 0;box-shadow:0 14px 40px rgba(0,0,0,.25)}
+input,select,textarea{width:100%;background:#0e0a17;color:var(--text);border:1px solid #49365a;border-radius:10px;padding:11px;margin:6px 0 10px}
+textarea{min-height:90px;resize:vertical}
+button{border:0;border-radius:10px;padding:11px 14px;background:linear-gradient(135deg,#7c3aed,#c026d3);color:white;font-weight:800;cursor:pointer;margin:4px}
+button:disabled{opacity:.5;cursor:not-allowed}
+.danger{background:#7f1d1d}
+.secondary{background:#292036}
+.good{background:#166534}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:13px}
+.stat b{display:block;font-size:22px;margin-top:5px}
+.tabs{display:flex;flex-wrap:wrap;gap:5px;margin:12px 0}
+.tab.active{outline:2px solid #c084fc}
+.panel{display:none}
+.panel.active{display:block}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:720px}
+th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}
+th{color:#d8b4fe}
+.status{padding:10px;border-radius:10px;background:#0e0a17;margin:8px 0;min-height:20px}
+.ok{color:#86efac}
+.err{color:#fca5a5}
+.hidden{display:none!important}
+.login-choice{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.search{max-width:320px}
+@media(max-width:750px){.grid,.row,.login-choice{grid-template-columns:1fr}.top{align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div><div class="brand">Hand Cricket Arena Admin</div><div class="muted">Memberships, rooms, and player support</div></div><button class="secondary" onclick="location.href='/'">Back to Game</button></div>
+
+  <section id="loginCard" class="card">
+    <h2>Admin Login</h2>
+    <div class="muted">Authorized emails: yaduvanshiboysyt and mrshiv99536. Owner Game ID SHIVAM123. Or use an existing ADMIN/OWNER session.</div>
+    <div id="loginStatus" class="status" role="status" aria-live="polite">Checking admin access...</div>
+    <div class="login-choice">
+      <div class="card" style="margin:0">
+        <h3>Game ID + Admin PIN</h3>
+        <label>Admin Game ID</label><input id="loginGameId" placeholder="e.g. SHIVAM123" autocomplete="username">
+        <label>Admin PIN / Password</label><input id="loginPin" type="password" placeholder="Admin PIN" autocomplete="current-password">
+        <button id="pinLoginBtn" onclick="pinLogin()">Login to Admin</button>
+      </div>
+      <div class="card" style="margin:0">
+        <h3>Current Game Session</h3>
+        <p class="muted">Sign in on the game first, then open this portal. Authorized Google or preview accounts enter without a PIN.</p>
+        <button onclick="googleSessionLogin()">Use Current Game Session</button>
+        <div id="setupBox" class="hidden">
+          <hr style="border-color:#332542"><h4>First-time password setup</h4>
+          <div class="muted">Owner only. Set an admin password of at least 8 characters for PIN login.</div>
+          <input id="newAdminPassword" type="password" placeholder="New admin password">
+          <input id="newAdminPassword2" type="password" placeholder="Repeat password">
+          <button class="good" onclick="setupPassword()">Set Admin Password</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="app" class="hidden">
+    <div class="card"><div class="top" style="margin:0"><div><b id="who"></b><div id="whoRole" class="muted"></div></div><button class="danger" onclick="adminLogout()">Logout</button></div></div>
+    <div class="tabs">
+      <button class="tab active" data-panel="overview">Overview</button>
+      <button class="tab" data-panel="rooms">Live Rooms</button>
+      <button class="tab" data-panel="players">Players</button>
+      <button class="tab" data-panel="subscriptions">Memberships</button>
+      <button class="tab" data-panel="support">Support</button>
+      <button class="tab" data-panel="announcement">Announcement</button>
+      <button class="tab" data-panel="reset">Password Resets</button>
+      <button class="tab" data-panel="team">Admin Team</button>
+      <button class="tab" data-panel="arena">Arena Reset</button>
+    </div>
+
+    <div id="overview" class="panel active"><div class="grid" id="stats"></div><div class="card"><h3>Server</h3><div id="serverInfo" class="muted"></div></div></div>
+
+    <div id="rooms" class="panel"><div class="card"><h3>Live Rooms</h3><p class="muted">Rooms older than 20 minutes auto-delete. Closing a room from here kicks all players.</p><button onclick="loadRooms()">Refresh</button><div class="table-wrap"><table><thead><tr><th>Code</th><th>Type</th><th>Access</th><th>Status</th><th>Players</th><th>A / B</th><th>Age</th><th>Actions</th></tr></thead><tbody id="roomsBody"></tbody></table></div></div></div>
+
+    <div id="players" class="panel"><div class="card"><h3>Players</h3><input class="search" id="playerSearch" placeholder="Search Game ID, name, or email" oninput="filterPlayers()"><button onclick="loadPlayers()">Refresh</button><div class="table-wrap"><table><thead><tr><th>Game ID</th><th>Name</th><th>Email</th><th>Role</th><th>Membership</th><th>Stats</th><th>Actions</th></tr></thead><tbody id="playersBody"></tbody></table></div></div></div>
+
+    <div id="announcement" class="panel"><div class="card"><h3>Announcement</h3><textarea id="announcementText" placeholder="Write an announcement..."></textarea><button onclick="saveAnnouncement()">Publish</button><button class="danger" onclick="deleteAnnouncement()">Remove</button></div></div>
+
+    <div id="subscriptions" class="panel"><div class="card"><h3>Premium Membership</h3><div class="row"><div><label>Player ID or Game ID</label><input id="subPlayerId" placeholder="HCA-... or SHIVAM123"></div><div><label>Days</label><input id="subDays" type="number" value="30" min="1" max="3650"></div></div><label>Reason</label><input id="subReason" value="Admin grant"><button class="good" onclick="grantSub()">Grant Premium</button><button class="danger" onclick="revokeSub()">Revoke Premium</button></div></div>
+
+    <div id="support" class="panel"><div class="card"><h3>Support Tickets</h3><p class="muted">Players send tickets from Help. Reply here. WhatsApp: 9354041918</p><button onclick="loadSupport()">Refresh</button><div id="supportList"></div></div></div>
+    <div id="reset" class="panel"><div class="card"><h3>Password Reset Requests</h3><button onclick="loadResets()">Refresh</button><div id="resetList"></div></div></div>
+
+    <div id="team" class="panel"><div class="card"><h3>Admin Team</h3><div class="muted">Owner only. Add or remove admin Game IDs.</div><div class="row"><input id="teamGameId" placeholder="ADMIN_GAME_ID"><div><button onclick="addAdmin()">Add Admin</button><button class="danger" onclick="removeAdmin()">Remove Admin</button></div></div><div id="teamList"></div></div></div>
+
+    <div id="arena" class="panel"><div class="card"><h3>Reset Arena</h3><p class="muted">Clears live rooms, match history, weekend registrations, and player stats. Does not delete user accounts.</p><button class="danger" onclick="resetArena()">Reset Arena Now</button></div></div>
+  </section>
+</div>
+<script>
+let adminToken=localStorage.getItem('hcaAdminSession')||'';
+let me=null;
+let allPlayers=[];
+const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1'||/\.monkeycode-ai\.live$/.test(location.hostname))?'':'https://hand-cricket-arena.shivam-hca.workers.dev';
+const apiUrl=p=>API_BASE+(String(p).startsWith('/')?p:'/'+p);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function setStatus(t,ok=false){$('loginStatus').textContent=t;$('loginStatus').className='status '+(ok?'ok':'err')}
+function ageText(ts){const n=Number(ts)||0;if(!n)return '-';const m=Math.max(0,Math.floor((Date.now()-n)/60000));return m+' min'}
+async function api(path,opt={}){opt.headers=Object.assign({},opt.headers||{},adminToken?{'X-Admin-Session':adminToken}:{});const r=await fetch(apiUrl(path),opt);let j={};try{j=await r.json()}catch{}if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j}
+function gameSession(){try{return JSON.parse(localStorage.getItem('hcaAuthV2')||'null')}catch{return null}}
+async function checkAccess(){
+  const a=gameSession();
+  try{const r=await fetch(apiUrl('/api/admin/status'),{headers:a?.token?{'X-Session-Token':a.token}:{},cache:'no-store'});const j=await r.json();
+    if(j.allowed && a?.token){$('setupBox').classList.toggle('hidden',j.passwordConfigured);setStatus(j.passwordConfigured?'Authorized game session detected. Use Current Game Session, or PIN login.':'Authorized session detected. Set an admin password below for PIN login.',true)}
+    else setStatus('Enter Admin Game ID + PIN, or sign in to the game with an authorized account first.');
+  }catch(e){setStatus('Could not check admin access: '+e.message)}
+  if(adminToken)try{await loadDashboard()}catch(e){adminToken='';localStorage.removeItem('hcaAdminSession')}
+}
+async function pinLogin(){const gid=$('loginGameId').value.trim(),pin=$('loginPin').value;const b=$('pinLoginBtn');b.disabled=true;try{const j=await api('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gameId:gid,pin})});adminToken=j.token;localStorage.setItem('hcaAdminSession',adminToken);await loadDashboard()}catch(e){setStatus(e.message)}finally{b.disabled=false}}
+async function googleSessionLogin(){const a=gameSession();if(!a?.token){setStatus('No game login found. Go back, sign in, then open Admin Portal.');return}try{const j=await fetch(apiUrl('/api/admin/status'),{headers:{'X-Session-Token':a.token}}).then(r=>r.json());if(!j.allowed){setStatus('This account is not authorized for Admin.');return}const r=await fetch(apiUrl('/api/admin/session-login'),{method:'POST',headers:{'Content-Type':'application/json','X-Session-Token':a.token},body:'{}'});const x=await r.json();if(!r.ok)throw new Error(x.error||'Admin login failed');adminToken=x.token;localStorage.setItem('hcaAdminSession',adminToken);await loadDashboard()}catch(e){setStatus(e.message)}}
+async function setupPassword(){const a=gameSession(),p=$('newAdminPassword').value,p2=$('newAdminPassword2').value;if(!a?.token)return setStatus('Game session missing.');if(p.length<8||p!==p2)return setStatus('Password must be 8+ characters and both fields must match.');try{const r=await fetch(apiUrl('/api/admin/setup-password'),{method:'POST',headers:{'Content-Type':'application/json','X-Session-Token':a.token},body:JSON.stringify({newPassword:p})});const j=await r.json();if(!r.ok)throw new Error(j.error||'Setup failed');setStatus('Admin password configured. You can now use Game ID + PIN login.',true);$('setupBox').classList.add('hidden')}catch(e){setStatus(e.message)}}
+async function loadDashboard(){const j=await api('/api/admin/overview');$('loginCard').classList.add('hidden');$('app').classList.remove('hidden');const who=j.me||{};$('who').textContent=(who.name||'Admin')+' · '+(who.gameId||'');$('whoRole').textContent=(who.role||'ADMIN')+(who.owner?' · Owner':'');$('stats').innerHTML=[['Registered players',j.registeredPlayers],['Free players',j.freePlayers],['Active subscribers',j.activeSubscribers],['Open rooms',j.openRooms],['Matches',j.matches],['Guilds',j.guilds],['Open tickets',j.tickets],['Today visits',j.todayVisits]].map(x=>`<div class="stat"><span class="muted">${esc(x[0])}</span><b>${x[1]}</b></div>`).join('');$('serverInfo').textContent='Server time: '+j.serverTime+' · Live rooms: '+j.rooms;loadPlayers();loadRooms();loadSupport();loadResets();loadTeam();loadAnnouncement()}
+async function loadRooms(){try{const j=await api('/api/admin/rooms');$('roomsBody').innerHTML=j.rooms.map(r=>`<tr><td><b>${esc(r.code)}</b></td><td>${esc(r.matchType)}</td><td>${esc(r.access)}</td><td>${esc(r.status)}</td><td>${r.players||0}</td><td>${r.A||0} / ${r.B||0}</td><td>${ageText(r.createdAt)}</td><td><button class="danger" onclick="closeRoom('${esc(r.code)}')">Close</button></td></tr>`).join('')||'<tr><td colspan="8">No live rooms.</td></tr>'}catch(e){$('roomsBody').innerHTML='<tr><td colspan="8" class="err">'+esc(e.message)+'</td></tr>'}}
+async function closeRoom(code){if(!confirm('Close room '+code+'? All players will be kicked.'))return;try{await api('/api/admin/rooms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});await loadRooms();await loadDashboard()}catch(e){alert(e.message)}}
+function renderPlayers(list){$('playersBody').innerHTML=list.map(p=>{const s=p.subscription||{};const exp=s.expires?new Date(s.expires).toLocaleDateString():'';return `<tr><td><b>${esc(p.gameId)}</b><br><span class="muted">${esc(p.playerId)}</span></td><td>${esc(p.name)}</td><td>${esc(p.identifier)}</td><td><select onchange="changeRole('${esc(p.playerId)}',this.value)"><option ${p.role==='USER'?'selected':''}>USER</option><option ${p.role==='ADMIN'?'selected':''}>ADMIN</option><option ${p.role==='OWNER'?'selected':''}>OWNER</option><option ${p.role==='SUPPORT'?'selected':''}>SUPPORT</option></select></td><td>${esc(s.status||'NONE')} ${s.premium?'PREMIUM':''} ${exp?('until '+exp):''}</td><td>M:${p.stats?.matches||0} W:${p.stats?.wins||0} R:${p.stats?.runs||0} Wk:${p.stats?.wickets||0}</td><td><button onclick="fillSub('${esc(p.gameId||p.playerId)}')">Premium</button></td></tr>`}).join('')||'<tr><td colspan="7">No players found.</td></tr>'}
+async function loadPlayers(){try{const j=await api('/api/admin/players');allPlayers=j.players||[];filterPlayers()}catch(e){$('playersBody').innerHTML='<tr><td colspan="7" class="err">'+esc(e.message)+'</td></tr>'}}
+function filterPlayers(){const q=($('playerSearch')?.value||'').trim().toLowerCase();const list=!q?allPlayers:allPlayers.filter(p=>[p.gameId,p.name,p.identifier,p.playerId].some(v=>String(v||'').toLowerCase().includes(q)));renderPlayers(list)}
+function fillSub(id){$('subPlayerId').value=id;document.querySelector('[data-panel="subscriptions"]').click()}
+async function changeRole(playerId,role){try{await api('/api/admin/role',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId,role})});await loadPlayers()}catch(e){alert(e.message);loadPlayers()}}
+async function grantSub(){try{await api('/api/admin/subscription',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:$('subPlayerId').value,action:'grant',days:Number($('subDays').value),reason:$('subReason').value})});alert('Premium granted');loadPlayers()}catch(e){alert(e.message)}}
+async function revokeSub(){try{await api('/api/admin/subscription',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:$('subPlayerId').value,action:'revoke'})});alert('Premium revoked');loadPlayers()}catch(e){alert(e.message)}}
+async function loadAnnouncement(){try{const j=await api('/api/admin/announcement');$('announcementText').value=j.text||''}catch{}}
+async function saveAnnouncement(){try{await api('/api/admin/announcement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:$('announcementText').value})});alert('Announcement published')}catch(e){alert(e.message)}}
+async function deleteAnnouncement(){try{await api('/api/admin/announcement',{method:'DELETE'});$('announcementText').value='';alert('Announcement removed')}catch(e){alert(e.message)}}
+async function loadSupport(){try{const j=await api('/api/admin/support');$('supportList').innerHTML=j.tickets.map(t=>`<div class="card"><b>${esc(t.id)} · ${esc(t.status)}</b><div>${esc(t.game_id||t.gameId||'')} — ${esc(t.name||'')} — ${esc(t.category||'')}</div><p>${esc(t.message)}</p><textarea id="resp_${esc(t.id)}" placeholder="Admin response">${esc(t.adminResponse||t.admin_response||'')}</textarea><select id="st_${esc(t.id)}"><option ${t.status==='OPEN'?'selected':''}>OPEN</option><option ${t.status==='IN_PROGRESS'?'selected':''}>IN_PROGRESS</option><option ${t.status==='RESOLVED'?'selected':''}>RESOLVED</option></select><button onclick="replyTicket('${esc(t.id)}')">Save Response</button></div>`).join('')||'<p class="muted">No tickets.</p>'}catch(e){$('supportList').innerHTML='<p class="err">'+esc(e.message)+'</p>'}}
+async function replyTicket(id){try{await api('/api/admin/support',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticketId:id,status:$('st_'+id).value,adminResponse:$('resp_'+id).value})});loadSupport()}catch(e){alert(e.message)}}
+async function loadResets(){try{const j=await api('/api/admin/password-reset');$('resetList').innerHTML=j.requests.map(r=>`<div class="card"><b>${esc(r.id)}</b> · ${esc(r.status)}<div>${esc(r.game_id||r.gameId||'')} — ${esc(r.created_at||r.createdAt||'')}</div><button onclick="resetAction('${esc(r.id)}','approve')">Approve</button><button class="danger" onclick="resetAction('${esc(r.id)}','reject')">Reject</button></div>`).join('')||'<p class="muted">No reset requests.</p>'}catch(e){$('resetList').innerHTML='<p class="err">'+esc(e.message)+'</p>'}}
+async function resetAction(id,action){try{const j=await api('/api/admin/password-reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestId:id,action})});alert(action==='approve'?'Reset code: '+j.resetCode:'Request rejected');loadResets()}catch(e){alert(e.message)}}
+async function loadTeam(){try{const j=await api('/api/admin/team');$('teamList').innerHTML='<p>Owner: <b>'+esc(j.ownerGameId||'Not configured')+'</b></p><p>Admins: '+((j.teamIds||[]).map(esc).join(', ')||'None')+'</p>'}catch(e){$('teamList').innerHTML='<p class="err">'+esc(e.message)+'</p>'}}
+async function teamAction(action){try{await api('/api/admin/team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gameId:$('teamGameId').value,action})});alert('Admin team updated');$('teamGameId').value='';loadTeam()}catch(e){alert(e.message)}}
+function addAdmin(){teamAction('add')}function removeAdmin(){teamAction('remove')}
+async function resetArena(){if(!confirm('Reset all rooms, rankings and weekend registrations?'))return;try{const j=await api('/api/admin/reset-arena',{method:'POST'});alert(j.message||'Arena reset');loadDashboard()}catch(e){alert(e.message)}}
+async function adminLogout(){try{if(adminToken)await api('/api/admin/logout',{method:'POST'})}catch{}adminToken='';localStorage.removeItem('hcaAdminSession');location.reload()}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.panel).classList.add('active')});
+checkAccess();
+</script>
+</body></html>

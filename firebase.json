@@ -1,0 +1,24 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "src/**",
+      ".wrangler/**",
+      "package.json",
+      "package-lock.json",
+      "wrangler-worker.toml",
+      "schema.sql",
+      "README.md",
+      ".gitignore"
+    ],
+    "rewrites": [
+      {
+        "source": "/admin",
+        "destination": "/admin.html"
+      }
+    ]
+  }
+}
