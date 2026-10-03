@@ -1,1 +1,0 @@
-Hand Cricket Arena V38 — Google Sign-In, clean home top menu, My Stats with Winning %, account/help screens, multiplayer server, and restored original sound effects. Opening sound remains OFF by design.
